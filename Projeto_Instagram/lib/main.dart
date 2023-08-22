@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_insta/flutter_insta.dart';
+import 'package:projeto_instagram/widgets/load_button.dart';
+import 'package:projeto_instagram/bloc/profile_bloc.dart';
 
 void main() {
   runApp(MyApp());
@@ -11,7 +12,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Instagram Profile',
       theme: ThemeData(
-        primaryColor: Colors.white, // Define a cor de fundo principal
+        primaryColor: Colors.white,
       ),
       debugShowCheckedModeBanner: false,
       home: MyHomePage(),
@@ -19,107 +20,97 @@ class MyApp extends StatelessWidget {
   }
 }
 
-class MyHomePage extends StatefulWidget {
-  @override
-  _MyHomePageState createState() => _MyHomePageState();
-}
-
-class _MyHomePageState extends State<MyHomePage> {
-  final FlutterInsta flutterInsta = FlutterInsta();
-  bool profileLoaded = false;
-  String username = "";
-
-  Future<void> loadProfileData() async {
-    try {
-      await flutterInsta.getProfileData(username);
-
-      setState(() {
-        profileLoaded = true;
-      });
-    } catch (e) {
-      print("Error loading profile data: $e");
-    }
-  }
+class MyHomePage extends StatelessWidget {
+  final TextEditingController _usernameController = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: Text('Perfil do Instagram'),
-        backgroundColor: Colors.white, // Define a cor de fundo da AppBar
+        backgroundColor: Colors.white,
         iconTheme: IconThemeData(
-            color: Colors.black), // Define a cor do ícone da AppBar
+          color: Colors.black,
+        ),
       ),
       body: Center(
         child: SingleChildScrollView(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: <Widget>[
-              if (profileLoaded)
-                Column(
-                  children: [
-                    SizedBox(height: 24), // Espaço entre a imagem e o topo
-                    ClipRRect(
-                      borderRadius: BorderRadius.circular(75),
-                      child: Image.network(
-                        flutterInsta.imgurl,
-                        width: 150,
-                        height: 150,
-                        fit: BoxFit.cover,
-                      ),
-                    ),
-                    SizedBox(height: 16),
-                    Text(
-                      flutterInsta.username,
-                      style: TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    SizedBox(height: 8),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
+              StreamBuilder<ProfileData>(
+                stream: profileBloc.profileData,
+                builder: (context, snapshot) {
+                  if (snapshot.hasData) {
+                    var flutterInsta = snapshot.data!.flutterInsta;
+                    return Column(
                       children: [
-                        Text('${flutterInsta.followers} Followers'),
-                        SizedBox(width: 16),
-                        Text('${flutterInsta.following} Following'),
+                        SizedBox(height: 24),
+                        ClipRRect(
+                          borderRadius: BorderRadius.circular(75),
+                          child: Image.network(
+                            flutterInsta.imgurl,
+                            width: 150,
+                            height: 150,
+                            fit: BoxFit.cover,
+                          ),
+                        ),
+                        SizedBox(height: 16),
+                        Text(
+                          flutterInsta.username,
+                          style: TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        SizedBox(height: 8),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text('${flutterInsta.followers} Followers'),
+                            SizedBox(width: 16),
+                            Text('${flutterInsta.following} Following'),
+                          ],
+                        ),
+                        SizedBox(height: 8),
+                        Text(
+                          flutterInsta.bio,
+                          textAlign: TextAlign.center,
+                          style: TextStyle(color: Colors.grey),
+                        ),
                       ],
-                    ),
-                    SizedBox(height: 8),
-                    Text(
-                      flutterInsta.bio,
-                      textAlign: TextAlign.center,
-                      style: TextStyle(color: Colors.grey),
-                    ),
-                  ],
-                ),
-              Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: TextField(
-                  onChanged: (value) {
-                    setState(() {
-                      username = value;
-                    });
-                  },
-                  decoration: InputDecoration(
-                    labelText: 'Pesquisar',
-                    prefixIcon: Icon(Icons.search),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                  ),
-                ),
-              ),
-              ElevatedButton(
-                onPressed: () {
-                  loadProfileData();
+                    );
+                  } else if (snapshot.hasError) {
+                    return Column(
+                      children: [
+                        SizedBox(height: 24),
+                        Text(
+                          'Erro: ${snapshot.error}',
+                          style: TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.red,
+                          ),
+                        ),
+                      ],
+                    );
+                  } else {
+                    return Column(
+                      children: [
+                        SizedBox(height: 24),
+                        Text(
+                          'Pesquisar perfil',
+                          style: TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
+                    );
+                  }
                 },
-                child: Text('Carregar Perfil'),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor:
-                      Colors.blue, // Define a cor de fundo do botão
-                ),
               ),
+              LoadButton(),
             ],
           ),
         ),
