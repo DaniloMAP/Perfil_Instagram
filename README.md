@@ -80,4 +80,4 @@ O uso do BLoC no projeto "Instagram Profile Viewer" demonstra como esse padrão 
 
 ## Licença
 
-Este projeto está licenciado sob a Licença MIT - consulte o arquivo [LICENSE](LICENSE) para obter detalhes.
+Este projeto está licenciado sob a Licença MIT - consulte o arquivo [LICENSE](LICENSE) para obter detalhes!
